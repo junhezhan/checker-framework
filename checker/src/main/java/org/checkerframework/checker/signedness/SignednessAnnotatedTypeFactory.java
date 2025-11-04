@@ -16,6 +16,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.signedness.qual.BitPattern;
 import org.checkerframework.checker.signedness.qual.PolySigned;
 import org.checkerframework.checker.signedness.qual.Signed;
 import org.checkerframework.checker.signedness.qual.SignedPositive;
@@ -59,6 +60,10 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
   /** The @Unsigned annotation. */
   private final AnnotationMirror UNSIGNED = AnnotationBuilder.fromClass(elements, Unsigned.class);
+
+  /** The @BitPattern annotation. */
+  protected final AnnotationMirror BIT_PATTERN =
+      AnnotationBuilder.fromClass(elements, BitPattern.class);
 
   /** The @SignednessGlb annotation. Do not use @SignedPositive; use this instead. */
   private final AnnotationMirror SIGNEDNESS_GLB =

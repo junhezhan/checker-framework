@@ -1,0 +1,73 @@
+Failures and Challenges when using LLM Support for Checker Framework Issue #3211
+======================================================================================
+
+1. **Deep framework internals understanding**
+   - LLM struggled with Checker Framework's type hierarchy initialization
+   - The "Multiple bottoms found" error required understanding of internal framework logic
+   - Documentation for handling multiple type hierarchy branches was not readily available
+   - Framework's bottom type detection algorithm was not intuitive
+
+2. **Type system complexity**
+   - Initial assumption that BitPattern could be a direct subtype of UnknownSignedness was incorrect
+   - The relationship between SignednessBottom and other qualifiers was complex
+   - Understanding when a qualifier is automatically detected as a "bottom" was non-trivial
+   - Required trial-and-error to understand the proper hierarchy structure
+
+3. **Build and runtime discrepancies**
+   - Code compiled successfully but failed at runtime in checker
+   - JAR file updates didn't always reflect in checker/bin/javac script immediately
+   - Caching issues made it hard to determine if changes were taking effect
+   - Test framework errors masked the actual implementation problems
+
+4. **Testing infrastructure complexity**
+   - Original master branch already had failing tests (unrelated to changes)
+   - Test framework initialization errors made it hard to isolate new bugs
+   - Couldn't easily run individual test files in isolation
+   - "Error when invoking constructor" messages were cryptic
+
+5. **Limited access to issue details**
+   - Could not directly access GitHub issue #3211 to see original requirements
+   - Had to infer requirements entirely from test file
+   - No access to issue comments or discussion that might provide context
+   - Uncertain about edge cases or specific design decisions
+
+6. **Java module system conflicts**
+   - Encountered IllegalAccessError when trying to run checker directly
+   - Had to work around Java module export restrictions
+   - Direct javac invocation required special setup
+
+7. **Incomplete solution**
+   - Despite multiple approaches, the "Multiple bottoms" error persisted
+   - Could not get BitPatternOperations test to pass
+   - Type hierarchy issue remains unresolved
+   - Would benefit from Checker Framework expert consultation
+
+8. **Framework-specific annotations**
+   - Initially tried to use @Bottom annotation incorrectly
+   - Wasn't clear which framework annotations were available
+   - Had to search for correct annotation imports
+
+9. **Time and iteration costs**
+   - Each compile-test cycle took significant time
+   - Multiple rebuilds required to ensure changes propagated
+   - Trial-and-error approach consumed many tokens/iterations
+
+10. **Documentation gaps**
+    - Limited examples of adding new qualifiers to existing hierarchies
+    - No clear guide for resolving bottom type conflicts
+    - Would benefit from more examples of complex type hierarchy modifications
+
+**Technical Issue Summary:**
+The main unresolved issue is that the Checker Framework's DefaultQualifierKindHierarchy
+detects both BitPattern and SignednessBottom as potential "bottom" types, even after
+adding BitPatternValue as an intermediate type. This suggests that either:
+- A special configuration in SignednessAnnotatedTypeFactory is needed
+- The hierarchy structure needs a different approach
+- There's a framework limitation that requires a different design
+
+**Recommendations for future work:**
+- Consult Checker Framework documentation on handling multiple type branches
+- Review how other checkers handle similar situations
+- Consider reaching out to Checker Framework maintainers for guidance
+- Explore whether BitPattern should be handled differently (not as part of the type hierarchy)
+
