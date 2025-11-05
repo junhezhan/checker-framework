@@ -297,6 +297,9 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
 
     @Override
     public Void visitBinary(BinaryTree tree, AnnotatedTypeMirror type) {
+      AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
+      AnnotatedTypeMirror rht = getAnnotatedType(tree.getRightOperand());
+
       switch (tree.getKind()) {
         case LEFT_SHIFT:
         case RIGHT_SHIFT:
@@ -307,8 +310,16 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
                   || SignednessShifts.isCastedShiftEitherSignedness(tree, path))) {
             type.replaceAnnotation(SIGNED_POSITIVE);
           } else {
-            AnnotatedTypeMirror lht = getAnnotatedType(tree.getLeftOperand());
             type.replaceAnnotations(lht.getPrimaryAnnotations());
+          }
+          break;
+        case AND:
+        case OR:
+        case XOR:
+          // For bitwise operations, if either operand is @BitPattern, result is @BitPattern
+          if (lht.hasPrimaryAnnotation(BitPattern.class)
+              || rht.hasPrimaryAnnotation(BitPattern.class)) {
+            type.replaceAnnotation(BIT_PATTERN);
           }
           break;
         default:
@@ -322,6 +333,18 @@ public class SignednessAnnotatedTypeFactory extends BaseAnnotatedTypeFactory {
       if (TreeUtils.isStringCompoundConcatenation(tree)) {
         if (TypesUtils.isCharOrCharacter(TreeUtils.typeOf(tree.getExpression()))) {
           type.replaceAnnotation(SIGNED);
+        }
+      }
+      return null;
+    }
+
+    @Override
+    public Void visitUnary(com.sun.source.tree.UnaryTree tree, AnnotatedTypeMirror type) {
+      // For bitwise complement (~), preserve @BitPattern type
+      if (tree.getKind() == Tree.Kind.BITWISE_COMPLEMENT) {
+        AnnotatedTypeMirror exprType = getAnnotatedType(tree.getExpression());
+        if (exprType.hasPrimaryAnnotation(BitPattern.class)) {
+          type.replaceAnnotation(BIT_PATTERN);
         }
       }
       return null;
